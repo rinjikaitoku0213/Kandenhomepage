@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>関西電鉄社員チャット</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: 'Noto Sans JP', sans-serif;
+        background: #f6f8f9;
+        color: #333;
+      }
+
+      /* ヘッダー */
+      .top-bar {
+        position: sticky;
+        top: 0;
+        width: 100%;
+        background: #f6f8f9;
+        padding: 20px 0 20px 55px;
+        border-bottom: 2px solid #e04040;
+        display: flex;
+        align-items: center;
+        z-index: 1000;
+      }
+      .top-bar .logo {
+        height: 100px;
+        object-fit: contain;
+      }
+
+      /* ログインボックス */
+      #login-box {
+        max-width: 400px;
+        margin: 40px auto;
+        padding: 30px;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        text-align: center;
+      }
+      #login-box input {
+        width: 80%;
+        padding: 12px;
+        border-radius: 10px;
+        border: 1px solid #ccc;
+        margin-bottom: 15px;
+        font-size: 1rem;
+      }
+      #login-box button {
+        padding: 12px 20px;
+        border-radius: 10px;
+        background: #e04040;
+        color: white;
+        font-weight: bold;
+        border: none;
+        cursor: pointer;
+        font-size: 1rem;
+      }
+
+      /* チャット */
+      #chat-container {
+        max-width: 600px;
+        margin: 40px auto;
+        display: none;
+        flex-direction: column;
+        gap: 10px;
+      }
+      #chat-box {
+        border: 1px solid #ccc;
+        height: 300px;
+        overflow-y: scroll;
+        padding: 10px;
+        background: white;
+        border-radius: 10px;
+      }
+      .chat-input {
+        display: flex;
+        gap: 10px;
+        margin-top: 10px;
+      }
+      #msg {
+        width: calc(100% - 110px);
+        padding: 10px;
+        border-radius: 10px;
+        border: 1px solid #ccc;
+        font-size: 1rem;
+      }
+      #send {
+        padding: 10px 20px;
+        border-radius: 10px;
+        background: #e04040;
+        color: white;
+        font-weight: bold;
+        border: none;
+        cursor: pointer;
+        font-size: 1rem;
+      }
+
+      /* 吹き出し */
+      .chat-message {
+        padding: 6px 10px;
+        border-radius: 8px;
+        margin-bottom: 4px;
+        border-left: 6px solid transparent;
+      }
+      .chat-message .name {
+        font-weight: bold;
+        margin-right: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ロゴ -->
+    <header class="top-bar">
+      <img
+        src="https://i.postimg.cc/hGSYwRwq/z-Xs-KD4El-Ok-DUud-O1762643882-1762643953.png"
+        alt="関西電鉄ロゴ"
+        class="logo"
+      />
+    </header>
+
+    <!-- ログイン -->
+    <div id="login-box">
+      <h2>社員ログイン</h2>
+      <input type="text" id="employee-id" placeholder="社員IDを入力" />
+      <br />
+      <button id="login-btn">ログイン</button>
+      <div id="login-error" style="color: red; margin-top: 10px"></div>
+    </div>
+
+    <!-- チャット -->
+    <div id="chat-container">
+      <div id="chat-box"></div>
+      <div class="chat-input">
+        <input type="text" id="msg" placeholder="メッセージ" />
+        <button id="send">送信</button>
+      </div>
+    </div>
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+    <script>
+      const firebaseConfig = {
+        apiKey: 'AIzaSyC9P2KDpJKq45VIQjXkXLsU_KjnYkwOajM',
+        authDomain: 'kanden-chat.firebaseapp.com',
+        projectId: 'kanden-chat',
+        storageBucket: 'kanden-chat.firebasestorage.app',
+        messagingSenderId: '818574421069',
+        appId: '1:818574421069:web:45bcc3bcc5168116130004',
+        measurementId: 'G-YJMPQG7K5V',
+      };
+      firebase.initializeApp(firebaseConfig);
+      const db = firebase.firestore();
+
+      // 社員データ
+      const users = {
+        wasd: { name: 'wasd', status: '管理職' },
+        Kaitoku0213: { name: '臨時快特【東京の民】', status: '管理職' },
+        Yonoyono7181: { name: '与野よの', status: '管理職' },
+        skyKOBE: { name: 'skyKOBE', status: '管理職' },
+        松ヶ崎: { name: '松ヶ崎', status: '神戸' },
+        '21a': { name: '21あ', status: '神戸' },
+        静岡快速: { name: '静岡快速', status: '神戸' },
+        保田て: { name: '保田て', status: '阪北' },
+        京央: { name: '京央', status: '阪北' },
+        大阪メトロ大好き君: { name: '大阪メトロ大好き君', status: '阪北' },
+      };
+
+      // ステータスカラー設定（濃・薄）
+      const statusColors = {
+        管理職: { border: '#000000', bg: '#eeeeee' },
+        神戸: { border: '#ff66b2', bg: '#ffe6f0' },
+        阪北: { border: '#e04040', bg: '#ffe6e6' },
+        一般: { border: '#aaaaaa', bg: '#f6f6f6' },
+      };
+
+      let currentUserID = null;
+      let currentUserName = null;
+      let currentUserStatus = null;
+
+      // ログイン処理
+      document.getElementById('login-btn').addEventListener('click', () => {
+        const enteredID = document.getElementById('employee-id').value.trim();
+        if (!users[enteredID]) {
+          document.getElementById('login-error').textContent =
+            '社員IDが正しくありません';
+          return;
+        }
+        currentUserID = enteredID;
+        currentUserName = users[enteredID].name;
+        currentUserStatus = users[enteredID].status;
+
+        document.getElementById('login-box').style.display = 'none';
+        document.getElementById('chat-container').style.display = 'flex';
+
+        initChat();
+      });
+
+      function initChat() {
+        const chatBox = document.getElementById('chat-box');
+        const msgInput = document.getElementById('msg');
+
+        // 送信
+        document.getElementById('send').addEventListener('click', () => {
+          const text = msgInput.value.trim();
+          if (!text) return;
+          db.collection('chat').add({
+            text: text,
+            uid: currentUserID,
+            name: currentUserName,
+            status: currentUserStatus,
+            time: firebase.firestore.FieldValue.serverTimestamp(),
+          });
+          msgInput.value = '';
+        });
+
+        // 受信
+        db.collection('chat')
+          .orderBy('time')
+          .onSnapshot((snapshot) => {
+            chatBox.innerHTML = '';
+            snapshot.forEach((doc) => {
+              const data = doc.data();
+              const colorSet =
+                statusColors[data.status] || statusColors['一般'];
+              const div = document.createElement('div');
+              div.classList.add('chat-message');
+              div.style.background = colorSet.bg;
+              div.style.borderLeft = `6px solid ${colorSet.border}`;
+              div.innerHTML = `<span class="name">${data.name}</span>: ${data.text}`;
+              chatBox.appendChild(div);
+            });
+            chatBox.scrollTop = chatBox.scrollHeight;
+          });
+      }
+    </script>
+  </body>
+</html>

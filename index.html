@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>関西電鉄</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: 'Noto Sans JP', sans-serif;
+        background: #f6f8f9;
+        color: #333;
+      }
+
+      /* ヘッダー */
+      .top-bar {
+        position: sticky;
+        top: 0;
+        width: 100%;
+        background: #f6f8f9;
+        color: #e04040;
+        padding: 20px 0 20px 55px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        border-bottom: 2px solid #e04040;
+        z-index: 1000;
+      }
+
+      .top-bar .logo {
+        height: 100px;
+        object-fit: contain;
+      }
+
+      /* サイドバー */
+      .sidebar {
+        position: fixed;
+        top: 160px;
+        left: 30px;
+        width: 280px;
+        background: #e04040;
+        color: white;
+        padding: 15px 20px;
+        border-radius: 10px;
+        box-sizing: border-box;
+        height: calc(100vh - 180px);
+        overflow-y: auto;
+        z-index: 500;
+      }
+
+      .sidebar h3.section-title {
+        font-size: 1.2rem;
+        cursor: pointer;
+        user-select: none;
+        margin-bottom: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        /* 3D 見え方のための親設定 */
+        perspective: 600px;
+      }
+
+      /* 矢印（前面/背面を持つ） */
+      .arrow {
+        display: inline-block;
+        width: 1.2em;
+        height: 1em;
+        position: relative;
+        transform-style: preserve-3d;
+        transition: transform 0.4s cubic-bezier(0.2, 0.9, 0.2, 1);
+        margin-left: 12px;
+        /* 見た目調整 */
+        font-weight: bold;
+        line-height: 1;
+        text-align: center;
+      }
+
+      .arrow span {
+        position: absolute;
+        inset: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        backface-visibility: hidden; /* 裏面を隠す */
+      }
+
+      .arrow .front {
+        transform: rotateY(0deg);
+      }
+
+      .arrow .back {
+        transform: rotateY(180deg);
+      }
+
+      /* openで手前方向（Y軸回転）に半回転して裏面を表示 */
+      .section-title.open .arrow {
+        transform: rotateY(180deg);
+      }
+
+      /* オーバーレイタブ（真裏から右へスライド） */
+      .overlay-tabs {
+        position: fixed;
+        top: 160px;
+        left: 30px;
+        width: 280px;
+        background: #fff;
+        border: 2px solid #e04040;
+        border-radius: 10px;
+        padding: 10px 15px;
+        z-index: 50;
+        max-height: 70vh;
+        overflow-y: auto;
+        box-sizing: border-box;
+        pointer-events: none;
+        opacity: 0;
+        transform: translateX(-40px);
+        transition: all 0.4s cubic-bezier(0.25, 1.25, 0.5, 1);
+      }
+
+      .overlay-tabs.show {
+        pointer-events: auto;
+        opacity: 1;
+        transform: translateX(300px);
+        z-index: 500;
+      }
+
+      .overlay-tabs .overlay-title {
+        font-size: 1.2rem;
+        padding: 20px 0;
+        font-weight: bold;
+        margin-bottom: 10px;
+        color: #e04040;
+      }
+
+      .sub-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 10px;
+      }
+
+      .sub-buttons button {
+        padding: 8px 10px;
+        background: #e04040;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+
+      .sub-buttons button:hover {
+        background: #ffbaba;
+        color: #d00000;
+      }
+
+      /* 本文 */
+      .container {
+        display: flex;
+        max-width: 1200px;
+        margin-left: 340px;
+        padding: 20px;
+        gap: 20px;
+        position: relative;
+      }
+
+      .main {
+        flex: 1;
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+      }
+
+      .status-bar {
+        background: white;
+        border-left: 6px solid #e04040;
+        border-radius: 5px;
+        padding: 10px 15px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 20px;
+      }
+
+      .status {
+        color: #e04040;
+        font-weight: 600;
+      }
+
+      /* クイック検索 */
+      .search-box {
+        background: #e0e0e0;
+        border-radius: 20px;
+        padding: 15px 25px 25px;
+        margin-bottom: 20px;
+      }
+
+      .quick-tabs {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 0;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #ccc;
+      }
+
+      .quick-tabs button {
+        flex: 1;
+        padding: 8px 12px;
+        border-radius: 15px;
+        border: none;
+        cursor: pointer;
+        background: #d0d0d0;
+        color: #333;
+        font-weight: bold;
+        transition: 0.2s;
+      }
+
+      .quick-tabs button.active {
+        background: #e04040;
+        color: white;
+      }
+
+      .quick-search-forms {
+        margin-top: 10px;
+      }
+
+      .search-fields {
+        display: flex;
+        gap: 12px;
+      }
+
+      .search-fields input {
+        flex: 1;
+        padding: 12px 15px;
+        border-radius: 15px;
+        border: 1px solid #ccc;
+        font-size: 1rem;
+      }
+
+      .search-fields button.search {
+        padding: 12px 20px;
+        border-radius: 15px;
+        background: #e04040;
+        color: white;
+        font-weight: bold;
+        border: none;
+        cursor: pointer;
+        transition: 0.2s;
+      }
+
+      /* お知らせ */
+      .notice-box {
+        background: white;
+        border-radius: 10px;
+        border-left: 6px solid #e04040;
+        padding: 15px 20px;
+        margin-bottom: 20px;
+      }
+
+      .notice-box h2 {
+        margin: 0 0 10px 0;
+        font-size: 1.1rem;
+        color: #e04040;
+      }
+
+      footer {
+        text-align: center;
+        color: #777;
+        padding: 20px;
+        font-size: 0.9rem;
+        border-top: 1px solid #ddd;
+        margin-top: 40px;
+      }
+    </style>
+  </head>
+  <body>
+    <header class="top-bar">
+      <img
+        src="https://i.postimg.cc/hGSYwRwq/z-Xs-KD4El-Ok-DUud-O1762643882-1762643953.png"
+        alt="関西電鉄ロゴ"
+        class="logo"
+      />
+    </header>
+
+    <div class="container">
+      <!-- サイドバー -->
+      <aside class="sidebar">
+        <h3 class="section-title" data-section="ride">
+          <span>電車に乗る</span>
+          <!-- arrow: front='＞' back='＜' -->
+          <span class="arrow" aria-hidden="true">
+            <span class="front">＞</span>
+            <span class="back">＜</span>
+          </span>
+        </h3>
+
+        <h3 class="section-title" data-section="trip">
+          <span>沿線に出かける</span>
+          <span class="arrow" aria-hidden="true">
+            <span class="front">＞</span>
+            <span class="back">＜</span>
+          </span>
+        </h3>
+
+        <h3 class="section-title" data-section="company">
+          <span>沿線で暮らす</span>
+          <span class="arrow" aria-hidden="true">
+            <span class="front">＞</span>
+            <span class="back">＜</span>
+          </span>
+        </h3>
+
+        <h3 class="section-title" data-section="chat">
+          <span>社員チャット</span>
+          <span class="arrow" aria-hidden="true">
+            <span class="front">＞</span>
+            <span class="back">＜</span>
+          </span>
+        </h3>
+      </aside>
+
+      <!-- オーバーレイ -->
+      <div class="overlay-tabs" id="overlay-ride">
+        <div class="overlay-title">関電にのる</div>
+        <div class="sub-buttons">
+          <button>ダイヤ検索</button>
+          <button>運賃検索</button>
+          <button>時刻表検索</button>
+          <button>路線図・駅情報</button>
+          <button>定期券予約</button>
+        </div>
+      </div>
+
+      <div class="overlay-tabs" id="overlay-trip">
+        <div class="overlay-title">関電でおでかけ</div>
+        <div class="sub-buttons">
+          <button>観光スポット</button>
+          <button>イベント情報</button>
+          <button>沿線マップ</button>
+        </div>
+      </div>
+
+      <div class="overlay-tabs" id="overlay-company">
+        <div class="overlay-title">沿線で暮らす</div>
+        <div class="sub-buttons">
+          <button>関電不動産</button>
+          <button>都市計画</button>
+        </div>
+      </div>
+
+      <!-- 本文 -->
+      <main class="main">
+        <div class="status-bar">
+          <div class="status">現在、30分以上の遅れはございません。</div>
+          <button
+            style="
+              background: #333;
+              color: #fff;
+              border: none;
+              padding: 6px 12px;
+              border-radius: 5px;
+            "
+          >
+            遅延証明書
+          </button>
+        </div>
+
+        <!-- クイック検索 -->
+        <div class="search-box">
+          <div class="quick-tabs">
+            <button class="active" data-search="dia">ダイヤ検索</button>
+            <button data-search="fare">運賃検索</button>
+            <button data-search="time">時刻表検索</button>
+          </div>
+          <div class="quick-search-forms">
+            <div class="quick-form" id="dia-form">
+              <div class="search-fields">
+                <input type="text" placeholder="出発駅" />
+                <input type="text" placeholder="到着駅" />
+                <button class="search">検索する</button>
+              </div>
+            </div>
+            <div class="quick-form" id="fare-form" style="display: none">
+              <div class="search-fields">
+                <input type="text" placeholder="出発駅" />
+                <input type="text" placeholder="到着駅" />
+                <button class="search">検索する</button>
+              </div>
+            </div>
+            <div class="quick-form" id="time-form" style="display: none">
+              <div class="search-fields">
+                <input type="text" placeholder="路線名" />
+                <button class="search">検索する</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- お知らせ -->
+        <div class="notice-box">
+          <h2>お知らせ</h2>
+          <ul>
+            <li>2025.11.08　関西電鉄×東方コラボ決定</li>
+            <li>2025.11.01　企画本格始動</li>
+          </ul>
+        </div>
+      </main>
+    </div>
+
+    <footer>© 2025 関西電鉄株式会社</footer>
+
+    <script>
+      // サイドバーとオーバーレイのトグル（矢印はCSSの3D回転で切替）
+      const sectionTitles = document.querySelectorAll('.section-title');
+      const overlays = document.querySelectorAll('.overlay-tabs');
+
+      sectionTitles.forEach((title) => {
+        title.addEventListener('click', () => {
+          const section = title.dataset.section;
+          const overlay = document.querySelector(`#overlay-${section}`);
+
+          if (!overlay) return;
+
+          if (overlay.classList.contains('show')) {
+            // 閉じる
+            overlay.classList.remove('show');
+            title.classList.remove('open');
+          } else {
+            // ほか閉じてから開く
+            overlays.forEach((o) => o.classList.remove('show'));
+            sectionTitles.forEach((t) => t.classList.remove('open'));
+
+            overlay.classList.add('show');
+            title.classList.add('open');
+          }
+        });
+      });
+
+      // クイック検索切替
+      const quickTabs = document.querySelectorAll('.quick-tabs button');
+      const quickForms = document.querySelectorAll('.quick-form');
+      quickTabs.forEach((tab) => {
+        tab.addEventListener('click', () => {
+          quickTabs.forEach((t) => t.classList.remove('active'));
+          tab.classList.add('active');
+          const target = tab.dataset.search;
+          quickForms.forEach((f) => {
+            f.style.display = f.id === `${target}-form` ? 'block' : 'none';
+          });
+        });
+      });
+
+      // 「社員チャット」をクリックしたら chat.html に移動
+      const chatTitle = document.querySelector(
+        '.section-title[data-section="chat"]'
+      );
+      chatTitle.addEventListener('click', () => {
+        window.location.href = 'chat.html';
+      });
+    </script>
+  </body>
+</html>
