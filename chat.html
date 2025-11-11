@@ -58,6 +58,11 @@
         cursor: pointer;
         font-size: 1rem;
       }
+      #login-error {
+        color: red;
+        margin-top: 10px;
+        min-height: 1.5em;
+      }
 
       /* チャット */
       #chat-container {
@@ -129,7 +134,7 @@
       <input type="text" id="employee-id" placeholder="社員IDを入力" />
       <br />
       <button id="login-btn">ログイン</button>
-      <div id="login-error" style="color: red; margin-top: 10px"></div>
+      <div id="login-error"></div>
     </div>
 
     <!-- チャット -->
@@ -150,7 +155,7 @@
         apiKey: 'AIzaSyC9P2KDpJKq45VIQjXkXLsU_KjnYkwOajM',
         authDomain: 'kanden-chat.firebaseapp.com',
         projectId: 'kanden-chat',
-        storageBucket: 'kanden-chat.firebasestorage.app',
+        storageBucket: 'kanden-chat.appspot.com', // ← 修正済み
         messagingSenderId: '818574421069',
         appId: '1:818574421069:web:45bcc3bcc5168116130004',
         measurementId: 'G-YJMPQG7K5V',
@@ -180,7 +185,6 @@
         Yatomi3701F: { name: '弥富急行', status: '東海' },
       };
 
-      // ステータスカラー設定（濃・薄）
       const statusColors = {
         管理職: { border: '#000000', bg: '#eeeeee' },
         神戸: { border: '#ff66b2', bg: '#ffe6f0' },
@@ -194,72 +198,99 @@
       let currentUserID = null;
       let currentUserName = null;
       let currentUserStatus = null;
-
       let chatInitialized = false;
 
-      // ログイン
-      document.getElementById('login-btn').addEventListener('click', () => {
+      // ログイン処理
+      document.getElementById('login-btn').addEventListener('click', async () => {
+        const errorBox = document.getElementById('login-error');
         const enteredID = document.getElementById('employee-id').value.trim();
-        if (!users[enteredID]) {
-          document.getElementById('login-error').textContent =
-            '社員IDが正しくありません';
+        errorBox.textContent = ''; // エラー消去
+
+        // 入力チェック
+        if (!enteredID) {
+          errorBox.textContent = '社員IDを入力してください';
           return;
         }
-        currentUserID = enteredID;
-        currentUserName = users[enteredID].name;
-        currentUserStatus = users[enteredID].status;
 
-        document.getElementById('login-box').style.display = 'none';
-        document.getElementById('chat-container').style.display = 'flex';
+        // 登録確認
+        if (!users[enteredID]) {
+          errorBox.textContent = '社員IDが正しくありません';
+          return;
+        }
 
-        initChat();
+        try {
+          currentUserID = enteredID;
+          currentUserName = users[enteredID].name;
+          currentUserStatus = users[enteredID].status;
+
+          // 画面切り替え
+          document.getElementById('login-box').style.display = 'none';
+          document.getElementById('chat-container').style.display = 'flex';
+
+          initChat();
+        } catch (error) {
+          console.error('ログイン中エラー:', error);
+          errorBox.textContent = 'ログイン中にエラーが発生しました';
+        }
       });
 
       function initChat() {
-        if (chatInitialized) return; // すでに初期化済みならスキップ
+        if (chatInitialized) return;
         chatInitialized = true;
 
         const chatBox = document.getElementById('chat-box');
         const msgInput = document.getElementById('msg');
+        const sendBtn = document.getElementById('send');
 
         // メッセージ送信
-        document.getElementById('send').addEventListener('click', () => {
+        sendBtn.addEventListener('click', async () => {
           const text = msgInput.value.trim();
           if (!text) return;
-          db.collection('chat').add({
-            text: text,
-            uid: currentUserID,
-            name: currentUserName,
-            status: currentUserStatus,
-            time: firebase.firestore.FieldValue.serverTimestamp(),
-          });
-          msgInput.value = '';
+          try {
+            await db.collection('chat').add({
+              text: text,
+              uid: currentUserID,
+              name: currentUserName,
+              status: currentUserStatus,
+              time: firebase.firestore.FieldValue.serverTimestamp(),
+            });
+            msgInput.value = '';
+          } catch (e) {
+            document.getElementById('login-error').textContent =
+              'メッセージ送信に失敗しました: ' + e.message;
+          }
         });
 
-        // リアルタイム受信
-        db.collection('chat')
-          .orderBy('time')
-          .onSnapshot((snapshot) => {
-            chatBox.innerHTML = '';
-            snapshot.forEach((doc) => {
-              const data = doc.data();
-              const colorSet =
-                statusColors[data.status] || statusColors['一般'];
-              const div = document.createElement('div');
-              div.classList.add('chat-message');
-              div.style.background = colorSet.bg;
-              div.style.borderLeft = `6px solid ${colorSet.border}`;
-              div.innerHTML = `<span class="name">${data.name}</span>: ${data.text}`;
-              chatBox.appendChild(div);
-            });
-            chatBox.scrollTop = chatBox.scrollHeight;
-          });
+        // メッセージ受信
+        try {
+          db.collection('chat')
+            .orderBy('time')
+            .onSnapshot(
+              (snapshot) => {
+                chatBox.innerHTML = '';
+                snapshot.forEach((doc) => {
+                  const data = doc.data();
+                  const colorSet =
+                    statusColors[data.status] || statusColors['一般'];
+                  const div = document.createElement('div');
+                  div.classList.add('chat-message');
+                  div.style.background = colorSet.bg;
+                  div.style.borderLeft = `6px solid ${colorSet.border}`;
+                  div.innerHTML = `<span class="name">${data.name}</span>: ${data.text}`;
+                  chatBox.appendChild(div);
+                });
+                chatBox.scrollTop = chatBox.scrollHeight;
+              },
+              (err) => {
+                document.getElementById('login-error').textContent =
+                  'チャット読み込みエラー: ' + err.message;
+              }
+            );
+        } catch (e) {
+          document.getElementById('login-error').textContent =
+            'Firestore接続に失敗しました: ' + e.message;
+        }
       }
     </script>
   </body>
 </html>
-
-
-
-
-
