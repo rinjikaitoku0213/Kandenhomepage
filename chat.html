@@ -59,7 +59,7 @@
     font-size: 1rem;
   }
 
-  /* チャット */
+  /* チャット全体 */
   #chat-container {
     max-width: 600px;
     margin: 40px auto;
@@ -67,6 +67,26 @@
     flex-direction: column;
     gap: 10px;
   }
+
+  /* タイトル部分（左タイトル＋右にユーザー名） */
+  .chat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-left: 8px solid #e04040;
+    padding-left: 10px;
+    font-size: 1.4rem;
+    font-weight: bold;
+  }
+
+  .current-user {
+    font-size: 1rem;
+    color: #666;
+    margin-right: 10px;
+    font-weight: normal;
+  }
+
+  /* チャットボックス */
   #chat-box {
     border: 1px solid #ccc;
     height: 300px;
@@ -75,6 +95,7 @@
     background: white;
     border-radius: 10px;
   }
+
   .chat-input {
     display: flex;
     gap: 10px;
@@ -109,7 +130,7 @@
 
   /* 自分用メッセージの枠線だけ強調 */
   .self {
-    border: 2px solid; /* JSでstatusColorsのborder色を設定 */
+    border: 2px solid;
   }
 
   .chat-message .name {
@@ -135,6 +156,10 @@
 </div>
 
 <div id="chat-container">
+  <div class="chat-header">
+    <div class="chat-title">全社員チャット</div>
+    <div class="current-user" id="current-user-name"></div>
+  </div>
   <div id="chat-box"></div>
   <div class="chat-input">
     <input type="text" id="msg" placeholder="メッセージ" />
@@ -163,7 +188,7 @@
     Yonoyono7181: { name: '与野よの', status: '管理職' },
     skyKOBE: { name: 'skyKOBE', status: '管理職' },
     Shounan_F: { name: '湘南ライナー', status: '管理職' },
-    T3: { name: '東急8500が好きな人', status: '阪南' },
+    T3: { name: '東急8500が好きな人', status: '神戸' },
     Matsugasaki: { name: '松ヶ崎', status: '神戸' },
     2121: { name: '21あ', status: '神戸' },
     shizukaiahi: { name: '静岡快速', status: '神戸' },
@@ -179,7 +204,7 @@
   };
 
   const statusColors = {
-    管理職: { border: '#000000', bg: '#e6e6e6' },
+    管理職: { border: '#e04040', bg: '#f4f4f4' },
     神戸: { border: '#ff66b2', bg: '#ffe6f0' },
     阪北: { border: '#f00000', bg: '#ffe6e6' },
     阪南: { border: '#f07000', bg: '#fff5e6' },
@@ -205,6 +230,7 @@
 
     document.getElementById('login-box').style.display = 'none';
     document.getElementById('chat-container').style.display = 'flex';
+    document.getElementById('current-user-name').textContent = currentUserName;
 
     initChat();
   });
@@ -240,7 +266,7 @@
         div.style.borderLeft = `6px solid ${colorSet.border}`;
         div.innerHTML = `<span class="name">${data.name}</span>: ${data.text}`;
 
-        // 自分のメッセージなら枠線で強調（背景はそのまま）
+        // 自分のメッセージなら枠線で強調
         if (data.uid === currentUserID) {
           div.classList.add('self');
           div.style.border = `2px solid ${colorSet.border}`;
@@ -254,5 +280,3 @@
 </script>
 </body>
 </html>
-
-
