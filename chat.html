@@ -1,317 +1,330 @@
 <!DOCTYPE html>
 <html lang="ja">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>関西電鉄社員チャット</title>
-<style>
-  body {
-    margin: 0;
-    font-family: 'Noto Sans JP', sans-serif;
-    background: #f6f8f9;
-    color: #333;
-  }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>関西電鉄社員チャット</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: 'Noto Sans JP', sans-serif;
+        background: #f6f8f9;
+        color: #333;
+      }
 
-  /* ヘッダー */
-  .top-bar {
-    position: sticky;
-    top: 0;
-    width: 100%;
-    background: #f6f8f9;
-    padding: 20px 0 20px 55px;
-    border-bottom: 2px solid #e04040;
-    display: flex;
-    align-items: center;
-    z-index: 1000;
-  }
-  .top-bar .logo {
-    height: 100px;
-    object-fit: contain;
-    cursor: pointer;
-  }
+      /* ヘッダー */
+      .top-bar {
+        position: sticky;
+        top: 0;
+        width: 100%;
+        background: #f6f8f9;
+        padding: 20px 0 20px 55px;
+        border-bottom: 2px solid #e04040;
+        display: flex;
+        align-items: center;
+        z-index: 1000;
+      }
+      .top-bar .logo {
+        height: 100px;
+        object-fit: contain;
+        cursor: pointer;
+      }
 
-  /* ログインボックス */
-  #login-box {
-    max-width: 400px;
-    margin: 40px auto;
-    padding: 30px;
-    background: white;
-    border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    text-align: center;
-  }
-  #login-box input {
-    width: 80%;
-    padding: 12px;
-    border-radius: 10px;
-    border: 1px solid #ccc;
-    margin-bottom: 15px;
-    font-size: 1rem;
-  }
-  #login-box button {
-    padding: 12px 20px;
-    border-radius: 10px;
-    background: #e04040;
-    color: white;
-    font-weight: bold;
-    border: none;
-    cursor: pointer;
-    font-size: 1rem;
-  }
+      /* ログインボックス */
+      #login-box {
+        max-width: 400px;
+        margin: 40px auto;
+        padding: 30px;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        text-align: center;
+      }
+      #login-box input {
+        width: 80%;
+        padding: 12px;
+        border-radius: 10px;
+        border: 1px solid #ccc;
+        margin-bottom: 15px;
+        font-size: 1rem;
+      }
+      #login-box button {
+        padding: 12px 20px;
+        border-radius: 10px;
+        background: #e04040;
+        color: white;
+        font-weight: bold;
+        border: none;
+        cursor: pointer;
+        font-size: 1rem;
+      }
 
-  /* チャット全体 */
-  #chat-container {
-    max-width: 600px;
-    margin: 40px auto;
-    display: none;
-    flex-direction: column;
-    gap: 10px;
-  }
+      /* チャット全体 */
+      #chat-container {
+        max-width: 600px;
+        margin: 40px auto;
+        display: none;
+        flex-direction: column;
+        gap: 10px;
+      }
 
-  /* タイトル部分 */
-  .chat-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-left: 8px solid #e04040;
-    padding: 10px 15px;
-    background: white;
-    border-radius: 10px;
-    font-size: 1.4rem;
-    font-weight: bold;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-  }
+      /* タイトル部分 */
+      .chat-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-left: 8px solid #e04040;
+        padding: 10px 15px;
+        background: white;
+        border-radius: 10px;
+        font-size: 1.4rem;
+        font-weight: bold;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      }
 
-  .chat-title {
-    color: #333;
-  }
+      .chat-title {
+        color: #333;
+      }
 
-  .current-user {
-    font-size: 1rem;
-    color: #555;
-    font-weight: normal;
-  }
+      .current-user {
+        font-size: 1rem;
+        color: #555;
+        font-weight: normal;
+      }
 
-  /* チャットボックス */
-  #chat-box {
-    border: 1px solid #ccc;
-    height: 300px;
-    overflow-y: scroll;
-    padding: 10px;
-    background: white;
-    border-radius: 10px;
-  }
+      /* チャットボックス */
+      #chat-box {
+        border: 1px solid #ccc;
+        height: 300px;
+        overflow-y: scroll;
+        padding: 10px;
+        background: white;
+        border-radius: 10px;
+      }
 
-  .chat-input {
-    display: flex;
-    gap: 10px;
-    margin-top: 10px;
-  }
-  #msg {
-    width: calc(100% - 110px);
-    padding: 10px;
-    border-radius: 10px;
-    border: 1px solid #ccc;
-    font-size: 1rem;
-  }
-  #send {
-    padding: 10px 20px;
-    border-radius: 10px;
-    background: #e04040;
-    color: white;
-    font-weight: bold;
-    border: none;
-    cursor: pointer;
-    font-size: 1rem;
-  }
+      .chat-input {
+        display: flex;
+        gap: 10px;
+        margin-top: 10px;
+      }
+      #msg {
+        width: calc(100% - 110px);
+        padding: 10px;
+        border-radius: 10px;
+        border: 1px solid #ccc;
+        font-size: 1rem;
+      }
+      #send {
+        padding: 10px 20px;
+        border-radius: 10px;
+        background: #e04040;
+        color: white;
+        font-weight: bold;
+        border: none;
+        cursor: pointer;
+        font-size: 1rem;
+      }
 
-  /* 吹き出し */
-  .chat-message {
-    padding: 8px 10px;
-    border-radius: 8px;
-    margin-bottom: 8px;
-    border-left: 6px solid transparent;
-    background: white;
-    position: relative;
-  }
+      /* 吹き出し */
+      .chat-message {
+        padding: 8px 10px;
+        border-radius: 8px;
+        margin-bottom: 8px;
+        border-left: 6px solid transparent;
+        background: white;
+        position: relative;
+      }
 
-  /* 自分用メッセージの枠線だけ強調 */
-  .self {
-    border: 2px solid;
-  }
+      /* 自分用メッセージの枠線だけ強調 */
+      .self {
+        border: 2px solid;
+      }
 
-  .meta-line {
-    font-size: 0.9rem;
-    color: #333;
-    font-weight: bold;
-    margin-bottom: 4px;
-  }
+      .meta-line {
+        font-size: 0.9rem;
+        color: #333;
+        font-weight: bold;
+        margin-bottom: 4px;
+      }
 
-  .text-line {
-    font-size: 1rem;
-    color: #333;
-    white-space: pre-wrap;
-    margin-left: 10px;
-  }
-</style>
-</head>
-<body>
+      .text-line {
+        font-size: 1rem;
+        color: #333;
+        white-space: pre-wrap;
+        margin-left: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <header class="top-bar">
+      <a href="index.html">
+        <img
+          src="https://i.postimg.cc/hGSYwRwq/z-Xs-KD4El-Ok-DUud-O1762643882-1762643953.png"
+          alt="関西電鉄ロゴ"
+          class="logo"
+        />
+      </a>
+    </header>
 
-<header class="top-bar">
-  <a href="index.html">
-    <img src="https://i.postimg.cc/hGSYwRwq/z-Xs-KD4El-Ok-DUud-O1762643882-1762643953.png" alt="関西電鉄ロゴ" class="logo" />
-  </a>
-</header>
+    <div id="login-box">
+      <h2>社員ログイン</h2>
+      <input type="text" id="employee-id" placeholder="社員IDを入力" />
+      <br />
+      <button id="login-btn">ログイン</button>
+      <div id="login-error" style="color: red; margin-top: 10px"></div>
+    </div>
 
-<div id="login-box">
-  <h2>社員ログイン</h2>
-  <input type="text" id="employee-id" placeholder="社員IDを入力" />
-  <br />
-  <button id="login-btn">ログイン</button>
-  <div id="login-error" style="color: red; margin-top: 10px"></div>
-</div>
+    <div id="chat-container">
+      <div class="chat-header">
+        <div class="chat-title">全社員チャット</div>
+        <div class="current-user" id="current-user-name"></div>
+      </div>
+      <div id="chat-box"></div>
+      <div class="chat-input">
+        <input type="text" id="msg" placeholder="メッセージ" />
+        <button id="send">送信</button>
+      </div>
+    </div>
 
-<div id="chat-container">
-  <div class="chat-header">
-    <div class="chat-title">全社員チャット</div>
-    <div class="current-user" id="current-user-name"></div>
-  </div>
-  <div id="chat-box"></div>
-  <div class="chat-input">
-    <input type="text" id="msg" placeholder="メッセージ" />
-    <button id="send">送信</button>
-  </div>
-</div>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script>
+      const firebaseConfig = {
+        apiKey: 'AIzaSyC9P2KDpJKq45VIQjXkXLsU_KjnYkwOajM',
+        authDomain: 'kanden-chat.firebaseapp.com',
+        projectId: 'kanden-chat',
+        storageBucket: 'kanden-chat.firebasestorage.app',
+        messagingSenderId: '818574421069',
+        appId: '1:818574421069:web:45bcc3bcc5168116130004',
+        measurementId: 'G-YJMPQG7K5V',
+      };
+      firebase.initializeApp(firebaseConfig);
+      const db = firebase.firestore();
 
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-<script>
-  const firebaseConfig = {
-    apiKey: 'AIzaSyC9P2KDpJKq45VIQjXkXLsU_KjnYkwOajM',
-    authDomain: 'kanden-chat.firebaseapp.com',
-    projectId: 'kanden-chat',
-    storageBucket: 'kanden-chat.firebasestorage.app',
-    messagingSenderId: '818574421069',
-    appId: '1:818574421069:web:45bcc3bcc5168116130004',
-    measurementId: 'G-YJMPQG7K5V',
-  };
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
+      const users = {
+        '8hWAp3Mc': { name: 'wasd', status: '管理職' },
+        Kaitoku0213: { name: '臨時快特【東京の民】', status: '管理職' },
+        Yonoyono7181: { name: '与野よの', status: '管理職' },
+        'Sannomiya-kobe': { name: 'skyKOBE', status: '管理職' },
+        Shounan_F: { name: '湘南ライナー', status: '管理職' },
+        391658: { name: 'ななしろうと', status: '本社' },
+        T3: { name: '東急8500が好きな人', status: '神戸' },
+        Matsugasaki: { name: '松ヶ崎', status: '神戸' },
+        2121: { name: '21あ', status: '神戸' },
+        shizukaiahi: { name: '静岡快速', status: '神戸' },
+        Hotate: { name: '保田て', status: '阪北' },
+        Keio: { name: '京央', status: '阪北' },
+        OsakaMetroLove: { name: '大阪メトロ大好き君', status: '阪北' },
+        XO3EYZIP: { name: '電車好き', status: '阪南' },
+        tatetate39: { name: 'nk本盾', status: '阪南' },
+        v46xz9jh: { name: '東海民', status: '奈良' },
+        zundamon310sendai: { name: '京急推し', status: '奈良' },
+        RustyFlower: { name: 'tabio', status: '奈良' },
+        8217: { name: 'お湯', status: '奈良' },
+        Yatomi3701F: { name: '弥富急行', status: '東海' },
+        Otameshi: { name: 'お試し', status: '滋賀' },
+      };
 
-  const users = {
-    '8hWAp3Mc': { name: 'wasd', status: '管理職' },
-    Kaitoku0213: { name: '臨時快特【東京の民】', status: '管理職' },
-    yonoyono7181: { name: '与野よの', status: '管理職' },
-    skyKOBE: { name: 'skyKOBE', status: '管理職' },
-    Shounan_F: { name: '湘南ライナー', status: '管理職' },
-    T3: { name: '東急8500が好きな人', status: '神戸' },
-    Matsugasaki: { name: '松ヶ崎', status: '神戸' },
-    2121: { name: '21あ', status: '神戸' },
-    shizukaiahi: { name: '静岡快速', status: '神戸' },
-    Hotate: { name: '保田て', status: '阪北' },
-    Keio: { name: '京央', status: '阪北' },
-    OsakaMetroLove: { name: '大阪メトロ大好き君', status: '阪北' },
-    XO3EYZIP: { name: '電車好き', status: '阪南' },
-    tatetate39: { name: 'nk本盾', status: '阪南' },
-    v46xz9jh: { name: '東海民', status: '奈良' },
-    zundamon310sendai: { name: '京急推し', status: '奈良' },
-    RustyFlower: { name: 'tabio', status: '奈良' },
-    Yatomi3701F: { name: '弥富急行', status: '東海' },
-  };
+      const statusColors = {
+        管理職: { border: '#e04040', bg: '#f4f4f4' },
+        神戸: { border: '#ff66b2', bg: '#ffe6f0' },
+        阪北: { border: '#f00000', bg: '#ffe6e6' },
+        阪南: { border: '#f07000', bg: '#fff5e6' },
+        奈良: { border: '#00f000', bg: '#e6ffe6' },
+        滋賀: { border: '#00f0f0', bg: '#e6ffff' },
+        東海: { border: '#0000f0', bg: '#e6e6ff' },
+        本社: { border: '#000000', bg: '#e6e6e6' },
+        一般: { border: '#000000', bg: '#e6e6e6' },
+      };
 
-  const statusColors = {
-    管理職: { border: '#e04040', bg: '#f4f4f4' },
-    神戸: { border: '#ff66b2', bg: '#ffe6f0' },
-    阪北: { border: '#f00000', bg: '#ffe6e6' },
-    阪南: { border: '#f07000', bg: '#fff5e6' },
-    奈良: { border: '#00f000', bg: '#e6ffe6' },
-    東海: { border: '#0000f0', bg: '#e6e6ff' },
-    一般: { border: '#000000', bg: '#e6e6e6' },
-  };
+      let currentUserID = null;
+      let currentUserName = null;
+      let currentUserStatus = null;
+      let chatInitialized = false;
 
-  let currentUserID = null;
-  let currentUserName = null;
-  let currentUserStatus = null;
-  let chatInitialized = false;
+      document.getElementById('login-btn').addEventListener('click', () => {
+        const enteredID = document.getElementById('employee-id').value.trim();
+        if (!users[enteredID]) {
+          document.getElementById('login-error').textContent =
+            '社員IDが正しくありません';
+          return;
+        }
+        currentUserID = enteredID;
+        currentUserName = users[enteredID].name;
+        currentUserStatus = users[enteredID].status;
 
-  document.getElementById('login-btn').addEventListener('click', () => {
-    const enteredID = document.getElementById('employee-id').value.trim();
-    if (!users[enteredID]) {
-      document.getElementById('login-error').textContent = '社員IDが正しくありません';
-      return;
-    }
-    currentUserID = enteredID;
-    currentUserName = users[enteredID].name;
-    currentUserStatus = users[enteredID].status;
+        document.getElementById('login-box').style.display = 'none';
+        document.getElementById('chat-container').style.display = 'flex';
+        document.getElementById(
+          'current-user-name'
+        ).textContent = `ログイン中：${currentUserName}`;
 
-    document.getElementById('login-box').style.display = 'none';
-    document.getElementById('chat-container').style.display = 'flex';
-    document.getElementById('current-user-name').textContent = `ログイン中：${currentUserName}`;
-
-    initChat();
-  });
-
-  function formatTime(timestamp) {
-    if (!timestamp) return '';
-    const date = timestamp.toDate();
-    const yyyy = date.getFullYear();
-    const mm = String(date.getMonth() + 1).padStart(2, '0');
-    const dd = String(date.getDate()).padStart(2, '0');
-    const hh = String(date.getHours()).padStart(2, '0');
-    const mi = String(date.getMinutes()).padStart(2, '0');
-    const ss = String(date.getSeconds()).padStart(2, '0');
-    return `${yyyy}/${mm}/${dd} ${hh}:${mi}:${ss}`;
-  }
-
-  function initChat() {
-    if (chatInitialized) return;
-    chatInitialized = true;
-
-    const chatBox = document.getElementById('chat-box');
-    const msgInput = document.getElementById('msg');
-
-    document.getElementById('send').addEventListener('click', () => {
-      const text = msgInput.value.trim();
-      if (!text) return;
-      db.collection('chat').add({
-        text: text,
-        uid: currentUserID,
-        name: currentUserName,
-        status: currentUserStatus,
-        time: firebase.firestore.FieldValue.serverTimestamp(),
+        initChat();
       });
-      msgInput.value = '';
-    });
 
-    db.collection('chat').orderBy('time').onSnapshot((snapshot) => {
-      chatBox.innerHTML = '';
-      let count = 0;
-      snapshot.forEach((doc) => {
-        count++;
-        const data = doc.data();
-        const colorSet = statusColors[data.status] || statusColors['一般'];
-        const div = document.createElement('div');
-        div.classList.add('chat-message');
-        div.style.background = colorSet.bg;
-        div.style.borderLeft = `6px solid ${colorSet.border}`;
+      function formatTime(timestamp) {
+        if (!timestamp) return '';
+        const date = timestamp.toDate();
+        const yyyy = date.getFullYear();
+        const mm = String(date.getMonth() + 1).padStart(2, '0');
+        const dd = String(date.getDate()).padStart(2, '0');
+        const hh = String(date.getHours()).padStart(2, '0');
+        const mi = String(date.getMinutes()).padStart(2, '0');
+        const ss = String(date.getSeconds()).padStart(2, '0');
+        return `${yyyy}/${mm}/${dd} ${hh}:${mi}:${ss}`;
+      }
 
-        const timeStr = formatTime(data.time);
-        div.innerHTML = `
+      function initChat() {
+        if (chatInitialized) return;
+        chatInitialized = true;
+
+        const chatBox = document.getElementById('chat-box');
+        const msgInput = document.getElementById('msg');
+
+        document.getElementById('send').addEventListener('click', () => {
+          const text = msgInput.value.trim();
+          if (!text) return;
+          db.collection('chat').add({
+            text: text,
+            uid: currentUserID,
+            name: currentUserName,
+            status: currentUserStatus,
+            time: firebase.firestore.FieldValue.serverTimestamp(),
+          });
+          msgInput.value = '';
+        });
+
+        db.collection('chat')
+          .orderBy('time')
+          .onSnapshot((snapshot) => {
+            chatBox.innerHTML = '';
+            let count = 0;
+            snapshot.forEach((doc) => {
+              count++;
+              const data = doc.data();
+              const colorSet =
+                statusColors[data.status] || statusColors['一般'];
+              const div = document.createElement('div');
+              div.classList.add('chat-message');
+              div.style.background = colorSet.bg;
+              div.style.borderLeft = `6px solid ${colorSet.border}`;
+
+              const timeStr = formatTime(data.time);
+              div.innerHTML = `
           <div class="meta-line">${count}. ${data.name}（${timeStr}）</div>
           <div class="text-line">${data.text}</div>
         `;
 
-        if (data.uid === currentUserID) {
-          div.classList.add('self');
-          div.style.border = `2px solid ${colorSet.border}`;
-        }
+              if (data.uid === currentUserID) {
+                div.classList.add('self');
+                div.style.border = `2px solid ${colorSet.border}`;
+              }
 
-        chatBox.appendChild(div);
-      });
-      chatBox.scrollTop = chatBox.scrollHeight;
-    });
-  }
-</script>
-</body>
+              chatBox.appendChild(div);
+            });
+            chatBox.scrollTop = chatBox.scrollHeight;
+          });
+      }
+    </script>
+  </body>
 </html>
-
