@@ -68,21 +68,27 @@
     gap: 10px;
   }
 
-  /* タイトル部分（左タイトル＋右にユーザー名） */
+  /* タイトル部分 */
   .chat-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     border-left: 8px solid #e04040;
-    padding-left: 10px;
+    padding: 10px 15px;
+    background: white;
+    border-radius: 10px;
     font-size: 1.4rem;
     font-weight: bold;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  }
+
+  .chat-title {
+    color: #333;
   }
 
   .current-user {
     font-size: 1rem;
-    color: #666;
-    margin-right: 10px;
+    color: #555;
     font-weight: normal;
   }
 
@@ -121,11 +127,12 @@
 
   /* 吹き出し */
   .chat-message {
-    padding: 6px 10px;
+    padding: 8px 10px;
     border-radius: 8px;
-    margin-bottom: 4px;
+    margin-bottom: 8px;
     border-left: 6px solid transparent;
     background: white;
+    position: relative;
   }
 
   /* 自分用メッセージの枠線だけ強調 */
@@ -133,9 +140,18 @@
     border: 2px solid;
   }
 
-  .chat-message .name {
+  .meta-line {
+    font-size: 0.9rem;
+    color: #333;
     font-weight: bold;
-    margin-right: 5px;
+    margin-bottom: 4px;
+  }
+
+  .text-line {
+    font-size: 1rem;
+    color: #333;
+    white-space: pre-wrap;
+    margin-left: 10px;
   }
 </style>
 </head>
@@ -230,10 +246,20 @@
 
     document.getElementById('login-box').style.display = 'none';
     document.getElementById('chat-container').style.display = 'flex';
-    document.getElementById('current-user-name').textContent = currentUserName;
+    document.getElementById('current-user-name').textContent = `ログイン中：${currentUserName}`;
 
     initChat();
   });
+
+  function formatTime(timestamp) {
+    if (!timestamp) return '';
+    const date = timestamp.toDate();
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    return `${month}/${day} ${hours}:${minutes}`;
+  }
 
   function initChat() {
     if (chatInitialized) return;
@@ -257,16 +283,22 @@
 
     db.collection('chat').orderBy('time').onSnapshot((snapshot) => {
       chatBox.innerHTML = '';
+      let count = 0;
       snapshot.forEach((doc) => {
+        count++;
         const data = doc.data();
         const colorSet = statusColors[data.status] || statusColors['一般'];
         const div = document.createElement('div');
         div.classList.add('chat-message');
         div.style.background = colorSet.bg;
         div.style.borderLeft = `6px solid ${colorSet.border}`;
-        div.innerHTML = `<span class="name">${data.name}</span>: ${data.text}`;
 
-        // 自分のメッセージなら枠線で強調
+        const timeStr = formatTime(data.time);
+        div.innerHTML = `
+          <div class="meta-line">${count}.　${data.name}　${timeStr}</div>
+          <div class="text-line">${data.text}</div>
+        `;
+
         if (data.uid === currentUserID) {
           div.classList.add('self');
           div.style.border = `2px solid ${colorSet.border}`;
