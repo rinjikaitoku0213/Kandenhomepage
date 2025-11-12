@@ -107,13 +107,19 @@
         gap: 10px;
         margin-top: 10px;
       }
+
+      /* textarea に変更して改行可能に */
       #msg {
         width: calc(100% - 110px);
+        height: 60px;
         padding: 10px;
         border-radius: 10px;
         border: 1px solid #ccc;
         font-size: 1rem;
+        resize: none;
+        font-family: 'Noto Sans JP', sans-serif;
       }
+
       #send {
         padding: 10px 20px;
         border-radius: 10px;
@@ -135,7 +141,7 @@
         position: relative;
       }
 
-      /* 自分用メッセージの枠線だけ強調 */
+      /* 自分のメッセージ */
       .self {
         border: 2px solid;
       }
@@ -181,7 +187,7 @@
       </div>
       <div id="chat-box"></div>
       <div class="chat-input">
-        <input type="text" id="msg" placeholder="メッセージ" />
+        <textarea id="msg" placeholder="メッセージを入力"></textarea>
         <button id="send">送信</button>
       </div>
     </div>
@@ -311,9 +317,9 @@
 
               const timeStr = formatTime(data.time);
               div.innerHTML = `
-          <div class="meta-line">${count}. ${data.name}（${timeStr}）</div>
-          <div class="text-line">${data.text}</div>
-        `;
+                <div class="meta-line">${count}. ${data.name}（${timeStr}）</div>
+                <div class="text-line">${data.text}</div>
+              `;
 
               if (data.uid === currentUserID) {
                 div.classList.add('self');
