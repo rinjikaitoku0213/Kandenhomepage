@@ -10,6 +10,7 @@
         font-family: 'Noto Sans JP', sans-serif;
         background: #f6f8f9;
         color: #333;
+        font-size: 18px; /* 全体の文字を少し大きく */
       }
 
       /* ヘッダー */
@@ -32,40 +33,41 @@
 
       /* ログインボックス */
       #login-box {
-        max-width: 400px;
-        margin: 40px auto;
-        padding: 30px;
+        max-width: 450px;
+        margin: 50px auto;
+        padding: 40px;
         background: white;
         border-radius: 10px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1);
         text-align: center;
+        font-size: 1.1rem;
       }
       #login-box input {
-        width: 80%;
-        padding: 12px;
+        width: 85%;
+        padding: 14px;
         border-radius: 10px;
         border: 1px solid #ccc;
-        margin-bottom: 15px;
-        font-size: 1rem;
+        margin-bottom: 20px;
+        font-size: 1.05rem;
       }
       #login-box button {
-        padding: 12px 20px;
+        padding: 14px 24px;
         border-radius: 10px;
         background: #e04040;
         color: white;
         font-weight: bold;
         border: none;
         cursor: pointer;
-        font-size: 1rem;
+        font-size: 1.05rem;
       }
 
       /* チャット全体 */
       #chat-container {
-        max-width: 600px;
-        margin: 40px auto;
+        max-width: 900px;
+        margin: 50px auto;
         display: none;
         flex-direction: column;
-        gap: 10px;
+        gap: 15px;
       }
 
       /* タイトル部分 */
@@ -74,12 +76,12 @@
         justify-content: space-between;
         align-items: center;
         border-left: 8px solid #e04040;
-        padding: 10px 15px;
+        padding: 15px 20px;
         background: white;
-        border-radius: 10px;
-        font-size: 1.4rem;
+        border-radius: 12px;
+        font-size: 1.6rem;
         font-weight: bold;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
       }
 
       .chat-title {
@@ -87,7 +89,7 @@
       }
 
       .current-user {
-        font-size: 1rem;
+        font-size: 1.1rem;
         color: #555;
         font-weight: normal;
       }
@@ -95,47 +97,49 @@
       /* チャットボックス */
       #chat-box {
         border: 1px solid #ccc;
-        height: 300px;
+        height: 350px;
         overflow-y: scroll;
-        padding: 10px;
+        padding: 20px;
         background: white;
-        border-radius: 10px;
+        border-radius: 12px;
+        font-size: 1.05rem;
+        line-height: 1.6;
       }
 
+      /* 入力欄 */
       .chat-input {
         display: flex;
-        gap: 10px;
+        gap: 12px;
         margin-top: 10px;
       }
 
-      /* textarea に変更して改行可能に */
       #msg {
-        width: calc(100% - 110px);
-        height: 60px;
-        padding: 10px;
+        width: calc(100% - 130px);
+        height: 50px;
+        padding: 12px;
         border-radius: 10px;
         border: 1px solid #ccc;
-        font-size: 1rem;
+        font-size: 1.05rem;
         resize: none;
         font-family: 'Noto Sans JP', sans-serif;
       }
 
       #send {
-        padding: 10px 20px;
+        padding: 14px 24px;
         border-radius: 10px;
         background: #e04040;
         color: white;
         font-weight: bold;
         border: none;
         cursor: pointer;
-        font-size: 1rem;
+        font-size: 1.1rem;
       }
 
       /* 吹き出し */
       .chat-message {
-        padding: 8px 10px;
-        border-radius: 8px;
-        margin-bottom: 8px;
+        padding: 10px 14px;
+        border-radius: 10px;
+        margin-bottom: 10px;
         border-left: 6px solid transparent;
         background: white;
         position: relative;
@@ -146,21 +150,24 @@
         border: 2px solid;
       }
 
+      /* 1行目（番号・名前・日付） */
       .meta-line {
-        font-size: 0.9rem;
-        color: #333;
-        font-weight: bold;
-        margin-bottom: 4px;
-      }
-
-      .text-line {
         font-size: 1rem;
         color: #333;
+        font-weight: bold;
+        margin-bottom: 6px;
+      }
+
+      /* 本文（2行目以降） */
+      .text-line {
+        font-size: 1.1rem;
+        color: #333;
         white-space: pre-wrap;
-        margin-left: 10px;
+        margin-left: 12px;
       }
     </style>
   </head>
+
   <body>
     <header class="top-bar">
       <a href="index.html">
