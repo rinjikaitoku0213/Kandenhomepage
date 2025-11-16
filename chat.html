@@ -7,7 +7,7 @@
     <style>
       html,
       body {
-        overflow-x: hidden; /* 横スクロールを無効化 */
+        overflow-x: hidden;
       }
 
       body {
@@ -15,7 +15,7 @@
         font-family: 'Noto Sans JP', sans-serif;
         background: #f6f8f9;
         color: #333;
-        font-size: 18px; /* 全体の文字を少し大きく */
+        font-size: 18px;
       }
 
       /* ヘッダー */
@@ -150,12 +150,10 @@
         position: relative;
       }
 
-      /* 自分のメッセージ */
       .self {
         border: 2px solid;
       }
 
-      /* 1行目（番号・名前・日付） */
       .meta-line {
         font-size: 1rem;
         color: #333;
@@ -163,12 +161,18 @@
         margin-bottom: 6px;
       }
 
-      /* 本文（2行目以降） */
       .text-line {
         font-size: 1.1rem;
         color: #333;
         white-space: pre-wrap;
         margin-left: 12px;
+      }
+
+      /* リンクの色 */
+      .text-line a {
+        color: #0078ff;
+        text-decoration: underline;
+        word-break: break-all;
       }
     </style>
   </head>
@@ -206,6 +210,7 @@
 
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
     <script>
       const firebaseConfig = {
         apiKey: 'AIzaSyC9P2KDpJKq45VIQjXkXLsU_KjnYkwOajM',
@@ -233,6 +238,7 @@
         Hotate: { name: '保田て', status: '阪北' },
         Keio: { name: '京央', status: '阪北' },
         OsakaMetroLove: { name: '大阪メトロ大好き君', status: '阪北' },
+        tukudani: { name: 'いけっちかね', status: '阪北' },
         XO3EYZIP: { name: '電車好き', status: '阪南' },
         tatetate39: { name: 'nk本盾', status: '阪南' },
         v46xz9jh: { name: '東海民', status: '奈良' },
@@ -259,6 +265,14 @@
       let currentUserName = null;
       let currentUserStatus = null;
       let chatInitialized = false;
+
+      // -----------------------------
+      // ★ URL を自動リンク化する関数
+      // -----------------------------
+      function linkify(text) {
+        const urlPattern = /(https?:\/\/[^\s]+)/g;
+        return text.replace(urlPattern, '<a href="$1" target="_blank">$1</a>');
+      }
 
       document.getElementById('login-btn').addEventListener('click', () => {
         const enteredID = document.getElementById('employee-id').value.trim();
@@ -328,9 +342,15 @@
               div.style.borderLeft = `6px solid ${colorSet.border}`;
 
               const timeStr = formatTime(data.time);
+
+              // -----------------------------
+              // ★ linkify を使ってリンク化
+              // -----------------------------
               div.innerHTML = `
-                <div class="meta-line">${count}. ${data.name}（${timeStr}）</div>
-                <div class="text-line">${data.text}</div>
+                <div class="meta-line">${count}. ${
+                data.name
+              }（${timeStr}）</div>
+                <div class="text-line">${linkify(data.text)}</div>
               `;
 
               if (data.uid === currentUserID) {
