@@ -9,7 +9,6 @@
       body {
         overflow-x: hidden;
       }
-
       body {
         margin: 0;
         font-family: 'Noto Sans JP', sans-serif;
@@ -17,8 +16,6 @@
         color: #333;
         font-size: 18px;
       }
-
-      /* ヘッダー */
       .top-bar {
         position: sticky;
         top: 0;
@@ -35,8 +32,6 @@
         object-fit: contain;
         cursor: pointer;
       }
-
-      /* ログインボックス */
       #login-box {
         max-width: 450px;
         margin: 50px auto;
@@ -65,8 +60,6 @@
         cursor: pointer;
         font-size: 1.05rem;
       }
-
-      /* チャット全体 */
       #chat-container {
         max-width: 900px;
         margin: 50px auto;
@@ -74,8 +67,6 @@
         flex-direction: column;
         gap: 15px;
       }
-
-      /* タイトル部分 */
       .chat-header {
         display: flex;
         justify-content: space-between;
@@ -88,18 +79,11 @@
         font-weight: bold;
         box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
       }
-
-      .chat-title {
-        color: #333;
-      }
-
       .current-user {
-        font-size: 1.1rem;
-        color: #555;
+        font-size: 1rem;
         font-weight: normal;
+        color: #555;
       }
-
-      /* チャットボックス */
       #chat-box {
         border: 1px solid #ccc;
         height: 350px;
@@ -110,14 +94,11 @@
         font-size: 1.05rem;
         line-height: 1.6;
       }
-
-      /* 入力欄 */
       .chat-input {
         display: flex;
         gap: 12px;
         margin-top: 10px;
       }
-
       #msg {
         width: calc(100% - 130px);
         height: 50px;
@@ -128,7 +109,6 @@
         resize: none;
         font-family: 'Noto Sans JP', sans-serif;
       }
-
       #send {
         padding: 14px 24px;
         border-radius: 10px;
@@ -139,8 +119,6 @@
         cursor: pointer;
         font-size: 1.1rem;
       }
-
-      /* 吹き出し */
       .chat-message {
         padding: 10px 14px;
         border-radius: 10px;
@@ -149,40 +127,77 @@
         background: white;
         position: relative;
       }
-
       .self {
         border: 2px solid;
       }
-
       .meta-line {
         font-size: 1rem;
         color: #333;
         font-weight: bold;
         margin-bottom: 6px;
       }
-
       .text-line {
         font-size: 1.1rem;
         color: #333;
         white-space: pre-wrap;
         margin-left: 12px;
       }
-
-      /* リンクの色 */
       .text-line a {
         color: #0078ff;
         text-decoration: underline;
         word-break: break-all;
       }
+      .msg-actions {
+        position: absolute;
+        top: 6px;
+        right: 8px;
+        display: flex;
+        gap: 8px;
+        font-size: 0.9rem;
+      }
+      .msg-actions span {
+        cursor: pointer;
+        color: #555;
+        text-decoration: underline;
+      }
+      /* 編集UI風スタイル */
+      .edit-box {
+        margin-top: 8px;
+      }
+      .edit-box textarea {
+        width: 95%;
+        height: 70px;
+        font-size: 1rem;
+        padding: 6px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+        font-family: 'Noto Sans JP', sans-serif;
+        resize: none; /* ← ここで高さ固定 */
+      }
+      .edit-box button {
+        margin-top: 4px;
+        margin-right: 6px;
+        padding: 6px 12px;
+        font-size: 0.95rem;
+        border-radius: 6px;
+        border: none;
+        cursor: pointer;
+      }
+      .save-btn {
+        background-color: #28a745;
+        color: white;
+      }
+      .cancel-btn {
+        background-color: #dc3545;
+        color: white;
+      }
     </style>
   </head>
-
   <body>
     <header class="top-bar">
       <a href="index.html">
         <img
           src="https://i.postimg.cc/hGSYwRwq/z-Xs-KD4El-Ok-DUud-O1762643882-1762643953.png"
-          alt="関西電鉄ロゴ"
           class="logo"
         />
       </a>
@@ -190,8 +205,7 @@
 
     <div id="login-box">
       <h2>社員ログイン</h2>
-      <input type="text" id="employee-id" placeholder="社員IDを入力" />
-      <br />
+      <input type="text" id="employee-id" placeholder="社員IDを入力" /><br />
       <button id="login-btn">ログイン</button>
       <div id="login-error" style="color: red; margin-top: 10px"></div>
     </div>
@@ -210,7 +224,6 @@
 
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-
     <script>
       const firebaseConfig = {
         apiKey: 'AIzaSyC9P2KDpJKq45VIQjXkXLsU_KjnYkwOajM',
@@ -261,19 +274,18 @@
         一般: { border: '#000000', bg: '#e6e6e6' },
       };
 
-      let currentUserID = null;
-      let currentUserName = null;
-      let currentUserStatus = null;
-      let chatInitialized = false;
+      let currentUserID = null,
+        currentUserName = null,
+        currentUserStatus = null;
 
-      // -----------------------------
-      // ★ URL を自動リンク化する関数
-      // -----------------------------
       function linkify(text) {
-        const urlPattern = /(https?:\/\/[^\s]+)/g;
-        return text.replace(urlPattern, '<a href="$1" target="_blank">$1</a>');
+        return text.replace(
+          /(https?:\/\/[^\s]+)/g,
+          '<a target="_blank" href="$1">$1</a>'
+        );
       }
 
+      // ログイン処理
       document.getElementById('login-btn').addEventListener('click', () => {
         const enteredID = document.getElementById('employee-id').value.trim();
         if (!users[enteredID]) {
@@ -284,43 +296,51 @@
         currentUserID = enteredID;
         currentUserName = users[enteredID].name;
         currentUserStatus = users[enteredID].status;
-
         document.getElementById('login-box').style.display = 'none';
         document.getElementById('chat-container').style.display = 'flex';
         document.getElementById(
           'current-user-name'
         ).textContent = `ログイン中：${currentUserName}`;
-
         initChat();
       });
 
       function formatTime(timestamp) {
         if (!timestamp) return '';
         const date = timestamp.toDate();
-        const yyyy = date.getFullYear();
-        const mm = String(date.getMonth() + 1).padStart(2, '0');
-        const dd = String(date.getDate()).padStart(2, '0');
-        const hh = String(date.getHours()).padStart(2, '0');
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, '0');
+        const d = String(date.getDate()).padStart(2, '0');
+        const h = String(date.getHours()).padStart(2, '0');
         const mi = String(date.getMinutes()).padStart(2, '0');
-        const ss = String(date.getSeconds()).padStart(2, '0');
-        return `${yyyy}/${mm}/${dd} ${hh}:${mi}:${ss}`;
+        const s = String(date.getSeconds()).padStart(2, '0');
+        return `${y}/${m}/${d} ${h}:${mi}:${s}`;
       }
 
       function initChat() {
-        if (chatInitialized) return;
-        chatInitialized = true;
-
         const chatBox = document.getElementById('chat-box');
         const msgInput = document.getElementById('msg');
 
-        document.getElementById('send').addEventListener('click', () => {
+        document.getElementById('send').addEventListener('click', async () => {
           const text = msgInput.value.trim();
           if (!text) return;
-          db.collection('chat').add({
-            text: text,
+
+          const lastMsgSnap = await db
+            .collection('chat')
+            .orderBy('number', 'desc')
+            .limit(1)
+            .get();
+          let newNumber = 1;
+          if (!lastMsgSnap.empty) {
+            const lastData = lastMsgSnap.docs[0].data();
+            newNumber = (lastData.number || 0) + 1;
+          }
+
+          await db.collection('chat').add({
+            text,
             uid: currentUserID,
             name: currentUserName,
             status: currentUserStatus,
+            number: newNumber,
             time: firebase.firestore.FieldValue.serverTimestamp(),
           });
           msgInput.value = '';
@@ -330,9 +350,7 @@
           .orderBy('time')
           .onSnapshot((snapshot) => {
             chatBox.innerHTML = '';
-            let count = 0;
             snapshot.forEach((doc) => {
-              count++;
               const data = doc.data();
               const colorSet =
                 statusColors[data.status] || statusColors['一般'];
@@ -340,28 +358,83 @@
               div.classList.add('chat-message');
               div.style.background = colorSet.bg;
               div.style.borderLeft = `6px solid ${colorSet.border}`;
+              div.dataset.id = doc.id;
 
+              const numberStr = data.number ? `${data.number}. ` : '';
               const timeStr = formatTime(data.time);
-
-              // -----------------------------
-              // ★ linkify を使ってリンク化
-              // -----------------------------
-              div.innerHTML = `
-                <div class="meta-line">${count}. ${
+              div.innerHTML = `<div class="meta-line">${numberStr}${
                 data.name
               }（${timeStr}）</div>
-                <div class="text-line">${linkify(data.text)}</div>
-              `;
+      <div class="text-line" id="text-${doc.id}">${linkify(data.text)}</div>`;
 
               if (data.uid === currentUserID) {
                 div.classList.add('self');
                 div.style.border = `2px solid ${colorSet.border}`;
+                const actions = document.createElement('div');
+                actions.classList.add('msg-actions');
+                actions.innerHTML = `<span onclick="editMsg('${doc.id}',\`${data.text}\`)">編集</span>
+        <span onclick="deleteMsg('${doc.id}')">削除</span>`;
+                div.appendChild(actions);
               }
-
               chatBox.appendChild(div);
             });
             chatBox.scrollTop = chatBox.scrollHeight;
           });
+      }
+
+      function editMsg(id, oldText) {
+        const textEl = document.getElementById(`text-${id}`);
+        if (!textEl) return;
+        textEl.innerHTML = `<div class="edit-box" style="display:flex; flex-direction:column; gap:8px; margin-top:8px;">
+  <textarea id="edit-area-${id}" style="height:70px; resize:none;">${oldText}</textarea>
+  <div style="display:flex; gap:8px;">
+    <button style="background-color:#e04040; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer;" onclick="saveEdit('${id}')">保存</button>
+    <button style="background-color:#e0e0e0; color:black; border:none; padding:6px 12px; border-radius:6px; cursor:pointer;" onclick="cancelEdit('${id}',\`${oldText}\`)">キャンセル</button>
+  </div>
+</div>`;
+      }
+
+      function editMsg(id, oldText) {
+        const textEl = document.getElementById(`text-${id}`);
+        if (!textEl) return;
+
+        textEl.innerHTML = `<div class="edit-box" style="display:flex; gap:8px; margin-top:8px; align-items:flex-start;">
+    <textarea id="edit-area-${id}" style="flex:1; height:70px;">${oldText}</textarea>
+    <div style="display:flex; gap:4px; flex-direction:column;">
+      <button style="background-color:#e04040; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer;" onclick="saveEdit('${id}')">保存</button>
+      <button style="background-color:#e0e0e0; color:black; border:none; padding:6px 12px; border-radius:6px; cursor:pointer;" onclick="cancelEdit('${id}',\`${oldText}\`)">キャンセル</button>
+    </div>
+  </div>`;
+      }
+
+      function saveEdit(id) {
+        const el = document.getElementById(`edit-area-${id}`);
+        if (!el) return;
+        const newText = el.value.trim();
+
+        if (newText === '') {
+          if (confirm('編集後の内容が空です。このメッセージを削除しますか？')) {
+            deleteMsg(id);
+          } else {
+            cancelEdit(id, newText); // 旧内容でなく、新しい空以外の内容をセット
+          }
+          return;
+        }
+
+        // 内容が変わらなくても強制更新
+        db.collection('chat').doc(id).update({ text: newText });
+        cancelEdit(id, newText); // 保存後に編集UIを消して表示を更新
+      }
+
+      function cancelEdit(id, text) {
+        const textEl = document.getElementById(`text-${id}`);
+        if (!textEl) return;
+        textEl.innerHTML = linkify(text);
+      }
+
+      function deleteMsg(id) {
+        if (!confirm('このメッセージを削除しますか？')) return;
+        db.collection('chat').doc(id).delete();
       }
     </script>
   </body>
