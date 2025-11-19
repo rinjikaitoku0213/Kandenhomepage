@@ -16,6 +16,8 @@
         color: #333;
         font-size: 18px;
       }
+
+      /* トップバー */
       .top-bar {
         position: sticky;
         top: 0;
@@ -32,6 +34,8 @@
         object-fit: contain;
         cursor: pointer;
       }
+
+      /* ログインボックス */
       #login-box {
         max-width: 450px;
         margin: 50px auto;
@@ -60,6 +64,8 @@
         cursor: pointer;
         font-size: 1.05rem;
       }
+
+      /* チャットコンテナ */
       #chat-container {
         max-width: 900px;
         margin: 50px auto;
@@ -67,7 +73,9 @@
         flex-direction: column;
         gap: 15px;
       }
-      .chat-header {
+
+      /* セクション見出し（マイページ・チャット） */
+      .section-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -78,12 +86,23 @@
         font-size: 1.6rem;
         font-weight: bold;
         box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+        cursor: pointer;
       }
+      .toggle-symbol {
+        font-size: 2rem;
+        font-weight: bold;
+        user-select: none;
+      }
+
+      /* ログイン中のマイページ */
       .current-user {
         font-size: 1rem;
         font-weight: normal;
         color: #555;
+        margin-bottom: 20px;
       }
+
+      /* チャットボックス */
       #chat-box {
         border: 1px solid #ccc;
         height: 350px;
@@ -93,11 +112,25 @@
         border-radius: 12px;
         font-size: 1.05rem;
         line-height: 1.6;
+        transition: max-height 0.3s ease, padding 0.3s ease;
       }
+      #chat-box.collapsed {
+        max-height: 0;
+        padding: 0 20px;
+        overflow: hidden;
+      }
+
+      /* 入力欄 */
       .chat-input {
         display: flex;
         gap: 12px;
         margin-top: 10px;
+        transition: max-height 0.3s ease, padding 0.3s ease;
+      }
+      .chat-input.collapsed {
+        max-height: 0;
+        overflow: hidden;
+        padding: 0;
       }
       #msg {
         width: calc(100% - 130px);
@@ -119,6 +152,8 @@
         cursor: pointer;
         font-size: 1.1rem;
       }
+
+      /* メッセージ */
       .chat-message {
         padding: 10px 14px;
         border-radius: 10px;
@@ -147,6 +182,8 @@
         text-decoration: underline;
         word-break: break-all;
       }
+
+      /* 編集・削除 */
       .msg-actions {
         position: absolute;
         top: 6px;
@@ -160,6 +197,7 @@
         color: #555;
         text-decoration: underline;
       }
+
       .edit-box {
         margin-top: 8px;
       }
@@ -202,6 +240,7 @@
       </a>
     </header>
 
+    <!-- ログイン -->
     <div id="login-box">
       <h2>社員ログイン</h2>
       <input type="text" id="employee-id" placeholder="社員IDを入力" /><br />
@@ -209,18 +248,28 @@
       <div id="login-error" style="color: red; margin-top: 10px"></div>
     </div>
 
+    <!-- チャット・マイページ -->
     <div id="chat-container">
-      <div class="chat-header">
-        <div class="chat-title">全社員チャット</div>
-        <div class="current-user" id="current-user-name"></div>
+      <!-- マイページ -->
+      <div class="section-header">
+        <div id="my-page-title">マイページ</div>
+        <div class="toggle-symbol" style="visibility: hidden">－</div>
+      </div>
+      <div class="current-user" id="current-user-name"></div>
+
+      <!-- 全社員チャット -->
+      <div class="section-header" id="chat-header">
+        <div>全社員チャット</div>
+        <div class="toggle-symbol" id="chat-toggle">－</div>
       </div>
       <div id="chat-box"></div>
-      <div class="chat-input">
+      <div class="chat-input" id="chat-input">
         <textarea id="msg" placeholder="メッセージを入力"></textarea>
         <button id="send">送信</button>
       </div>
     </div>
 
+    <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
     <script>
@@ -237,34 +286,31 @@
       const db = firebase.firestore();
 
       const users = {
-        /* ← ここはそのまま触ってない */
         '8hWAp3Mc': { name: 'wasd', status: '管理職' },
         Kaitoku0213: { name: '臨時快特【東京の民】', status: '管理職' },
-        yonoyono7181: { name: '与野よの', status: '管理職' },
         'Sannomiya-kobe': { name: 'skyKOBE', status: '管理職' },
-        Shounan_F: { name: '湘南ライナー', status: '管理職' },
+        T3: { name: '東急8500が好きな人', status: '管理職' },
+        tatetate39: { name: 'nk本盾', status: '管理職' },
+        yonoyono7181: { name: '与野よの', status: '本社' },
+        Shounan_F: { name: '湘南ライナー', status: '本社' },
         391658: { name: 'ななしろうと', status: '本社' },
         sijuukara0022: { name: '四十雀', status: '本社' },
-        T3: { name: '東急8500が好きな人', status: '神戸' },
         Matsugasaki: { name: '松ヶ崎', status: '神戸' },
         2121: { name: '21あ', status: '神戸' },
         shizukaiahi: { name: '静岡快速', status: '神戸' },
         Hotate: { name: '保田て', status: '阪北' },
         Keio: { name: '京央', status: '阪北' },
-        OsakaMetroLove: { name: '大阪メトロ大好き君', status: '阪北' },
         tukudani: { name: 'いけっちかね', status: '阪北' },
         XO3EYZIP: { name: '電車好き', status: '阪南' },
-        tatetate39: { name: 'nk本盾', status: '阪南' },
         v46xz9jh: { name: '東海民', status: '奈良' },
-        zundamon310sendai: { name: '京急推し', status: '奈良' },
         RustyFlower: { name: 'tabio', status: '奈良' },
         8217: { name: 'お湯', status: '奈良' },
         Yatomi3701F: { name: '弥富急行', status: '東海' },
-        Otameshi: { name: 'お試し', status: '滋賀' },
+        zundamon310sendai: { name: '京急推し', status: '滋賀' },
       };
 
       const statusColors = {
-        /* ← ここもそのまま */ 管理職: { border: '#e04040', bg: '#f4f4f4' },
+        管理職: { border: '#e04040', bg: '#f4f4f4' },
         神戸: { border: '#ff66b2', bg: '#ffe6f0' },
         阪北: { border: '#f00000', bg: '#ffe6e6' },
         阪南: { border: '#f07000', bg: '#fff5e6' },
@@ -299,104 +345,45 @@
         currentUserStatus = users[enteredID].status;
         document.getElementById('login-box').style.display = 'none';
         document.getElementById('chat-container').style.display = 'flex';
+
+        // 「〇〇のマイページ」に変更
+        document.getElementById(
+          'my-page-title'
+        ).textContent = `${currentUserName}のマイページ`;
+
         document.getElementById(
           'current-user-name'
-        ).textContent = `ログイン中：${currentUserName}`;
+        ).textContent = `現在制作中です。要望などありましたらお寄せください。`;
         initChat();
       });
 
       function formatTime(timestamp) {
         if (!timestamp) return '';
         const date = timestamp.toDate();
-        const y = date.getFullYear();
-        const m = String(date.getMonth() + 1).padStart(2, '0');
-        const d = String(date.getDate()).padStart(2, '0');
-        const h = String(date.getHours()).padStart(2, '0');
-        const mi = String(date.getMinutes()).padStart(2, '0');
-        const s = String(date.getSeconds()).padStart(2, '0');
-        return `${y}/${m}/${d} ${h}:${mi}:${s}`;
-      }
-
-      /* ここから修正後バージョン */
-
-      let lastRenderedIDs = new Set(); // 更新チェック
-
-      function loadMessages() {
-        const chatBox = document.getElementById('chat-box');
-
-        db.collection('chat')
-          .orderBy('time')
-          .get()
-          .then((snapshot) => {
-            const newIDs = new Set();
-            chatBox.innerHTML = '';
-
-            snapshot.forEach((doc) => {
-              const data = doc.data();
-              newIDs.add(doc.id);
-
-              const colorSet =
-                statusColors[data.status] || statusColors['一般'];
-
-              const div = document.createElement('div');
-              div.classList.add('chat-message');
-              div.style.background = colorSet.bg;
-              div.style.borderLeft = `6px solid ${colorSet.border}`;
-              div.dataset.id = doc.id;
-
-              const numberStr = data.number ? `${data.number}. ` : '';
-              const timeStr = formatTime(data.time);
-
-              div.innerHTML = `
-                <div class="meta-line">${numberStr}${
-                data.name
-              }（${timeStr}）</div>
-                <div class="text-line" id="text-${doc.id}">${linkify(
-                data.text
-              )}</div>
-              `;
-
-              if (data.uid === currentUserID) {
-                div.classList.add('self');
-                div.style.border = `2px solid ${colorSet.border}`;
-
-                const actions = document.createElement('div');
-                actions.classList.add('msg-actions');
-                actions.innerHTML = `
-                  <span onclick="editMsg('${doc.id}', \`${data.text}\`)">編集</span>
-                  <span onclick="deleteMsg('${doc.id}')">削除</span>
-                `;
-                div.appendChild(actions);
-              }
-
-              chatBox.appendChild(div);
-            });
-
-            chatBox.scrollTop = chatBox.scrollHeight;
-            lastRenderedIDs = newIDs;
-          });
+        return `${date.getFullYear()}/${String(date.getMonth() + 1).padStart(
+          2,
+          '0'
+        )}/${String(date.getDate()).padStart(2, '0')} ${String(
+          date.getHours()
+        ).padStart(2, '0')}:${String(date.getMinutes()).padStart(
+          2,
+          '0'
+        )}:${String(date.getSeconds()).padStart(2, '0')}`;
       }
 
       function initChat() {
         const msgInput = document.getElementById('msg');
-
-        // メッセージ送信
         document.getElementById('send').addEventListener('click', async () => {
           const text = msgInput.value.trim();
           if (!text) return;
-
           const lastMsgSnap = await db
             .collection('chat')
             .orderBy('number', 'desc')
             .limit(1)
             .get();
-
           let newNumber = 1;
-          if (!lastMsgSnap.empty) {
-            const lastData = lastMsgSnap.docs[0].data();
-            newNumber = (lastData.number || 0) + 1;
-          }
-
+          if (!lastMsgSnap.empty)
+            newNumber = (lastMsgSnap.docs[0].data().number || 0) + 1;
           await db.collection('chat').add({
             text,
             uid: currentUserID,
@@ -405,57 +392,46 @@
             number: newNumber,
             time: firebase.firestore.FieldValue.serverTimestamp(),
           });
-
           msgInput.value = '';
         });
 
-        // 🔥ここを「リアルタイム監視」に変更（余白・見た目は一切変更なし）
         db.collection('chat')
           .orderBy('time')
           .onSnapshot((snapshot) => {
             const chatBox = document.getElementById('chat-box');
             chatBox.innerHTML = '';
-
             snapshot.forEach((doc) => {
               const data = doc.data();
               const colorSet =
                 statusColors[data.status] || statusColors['一般'];
-
               const div = document.createElement('div');
               div.classList.add('chat-message');
               div.style.background = colorSet.bg;
               div.style.borderLeft = `6px solid ${colorSet.border}`;
               div.dataset.id = doc.id;
-
               const numberStr = data.number ? `${data.number}. ` : '';
               const timeStr = formatTime(data.time);
-
               div.innerHTML = `
-                <div class="meta-line">${numberStr}${
+              <div class="meta-line">${numberStr}${
                 data.name
               }（${timeStr}）</div>
-                <div class="text-line" id="text-${doc.id}">${linkify(
+              <div class="text-line" id="text-${doc.id}">${linkify(
                 data.text
               )}</div>
-              `;
-
-              // 自分のメッセージは枠線と編集/削除
+            `;
               if (data.uid === currentUserID) {
                 div.classList.add('self');
                 div.style.border = `2px solid ${colorSet.border}`;
-
                 const actions = document.createElement('div');
                 actions.classList.add('msg-actions');
                 actions.innerHTML = `
-                  <span onclick="editMsg('${doc.id}', \`${data.text}\`)">編集</span>
-                  <span onclick="deleteMsg('${doc.id}')">削除</span>
-                `;
+                <span onclick="editMsg('${doc.id}', \`${data.text}\`)">編集</span>
+                <span onclick="deleteMsg('${doc.id}')">削除</span>
+              `;
                 div.appendChild(actions);
               }
-
               chatBox.appendChild(div);
             });
-
             chatBox.scrollTop = chatBox.scrollHeight;
           });
       }
@@ -463,49 +439,57 @@
       function editMsg(id, oldText) {
         const textEl = document.getElementById(`text-${id}`);
         if (!textEl) return;
-
         textEl.innerHTML = `
           <div class="edit-box" style="display:flex; gap:8px; margin-top:8px; align-items:flex-start;">
             <textarea id="edit-area-${id}" style="flex:1; height:70px;">${oldText}</textarea>
             <div style="display:flex; gap:4px; flex-direction:column;">
-              <button style="background-color:#e04040; color:white; border:none; padding:6px 12px; border-radius:6px; cursor:pointer;" onclick="saveEdit('${id}')">保存</button>
-              <button style="background-color:#e0e0e0; color:black; border:none; padding:6px 12px; border-radius:6px; cursor:pointer;" onclick="cancelEdit('${id}',\`${oldText}\`)">キャンセル</button>
+              <button style="background-color:#e04040;color:white;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;" onclick="saveEdit('${id}')">保存</button>
+              <button style="background-color:#e0e0e0;color:black;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;" onclick="cancelEdit('${id}',\`${oldText}\`)">キャンセル</button>
             </div>
           </div>
         `;
       }
-
       function saveEdit(id) {
         const el = document.getElementById(`edit-area-${id}`);
         if (!el) return;
-
         const newText = el.value.trim();
-
         if (newText === '') {
-          if (confirm('編集後の内容が空です。このメッセージを削除しますか？')) {
+          if (confirm('編集後の内容が空です。このメッセージを削除しますか？'))
             deleteMsg(id);
-          } else {
-            cancelEdit(id, newText);
-          }
+          else cancelEdit(id, newText);
           return;
         }
-
         db.collection('chat').doc(id).update({ text: newText });
         cancelEdit(id, newText);
       }
-
       function cancelEdit(id, text) {
         const textEl = document.getElementById(`text-${id}`);
         if (!textEl) return;
-
         textEl.innerHTML = linkify(text);
       }
-
       function deleteMsg(id) {
         if (!confirm('このメッセージを削除しますか？')) return;
-
         db.collection('chat').doc(id).delete();
       }
+
+      // 折りたたみ
+      const chatHeader = document.getElementById('chat-header');
+      const chatBox = document.getElementById('chat-box');
+      const chatInput = document.getElementById('chat-input');
+      const chatToggle = document.getElementById('chat-toggle');
+      let collapsed = false;
+      chatHeader.addEventListener('click', () => {
+        collapsed = !collapsed;
+        if (collapsed) {
+          chatBox.classList.add('collapsed');
+          chatInput.classList.add('collapsed');
+          chatToggle.textContent = '＋';
+        } else {
+          chatBox.classList.remove('collapsed');
+          chatInput.classList.remove('collapsed');
+          chatToggle.textContent = '－';
+        }
+      });
     </script>
   </body>
 </html>
