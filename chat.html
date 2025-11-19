@@ -240,10 +240,11 @@
         /* ← ここはそのまま触ってない */
         '8hWAp3Mc': { name: 'wasd', status: '管理職' },
         Kaitoku0213: { name: '臨時快特【東京の民】', status: '管理職' },
-        Yonoyono7181: { name: '与野よの', status: '管理職' },
+        yonoyono7181: { name: '与野よの', status: '管理職' },
         'Sannomiya-kobe': { name: 'skyKOBE', status: '管理職' },
         Shounan_F: { name: '湘南ライナー', status: '管理職' },
         391658: { name: 'ななしろうと', status: '本社' },
+        sijuukara0022: { name: '四十雀', status: '本社' },
         T3: { name: '東急8500が好きな人', status: '神戸' },
         Matsugasaki: { name: '松ヶ崎', status: '神戸' },
         2121: { name: '21あ', status: '神戸' },
@@ -379,6 +380,7 @@
       function initChat() {
         const msgInput = document.getElementById('msg');
 
+        // メッセージ送信
         document.getElementById('send').addEventListener('click', async () => {
           const text = msgInput.value.trim();
           if (!text) return;
@@ -407,9 +409,55 @@
           msgInput.value = '';
         });
 
-        // ここ重要：リアルタイム監視を削除して、定期取得に変更
-        loadMessages();
-        setInterval(loadMessages, 2000);
+        // 🔥ここを「リアルタイム監視」に変更（余白・見た目は一切変更なし）
+        db.collection('chat')
+          .orderBy('time')
+          .onSnapshot((snapshot) => {
+            const chatBox = document.getElementById('chat-box');
+            chatBox.innerHTML = '';
+
+            snapshot.forEach((doc) => {
+              const data = doc.data();
+              const colorSet =
+                statusColors[data.status] || statusColors['一般'];
+
+              const div = document.createElement('div');
+              div.classList.add('chat-message');
+              div.style.background = colorSet.bg;
+              div.style.borderLeft = `6px solid ${colorSet.border}`;
+              div.dataset.id = doc.id;
+
+              const numberStr = data.number ? `${data.number}. ` : '';
+              const timeStr = formatTime(data.time);
+
+              div.innerHTML = `
+                <div class="meta-line">${numberStr}${
+                data.name
+              }（${timeStr}）</div>
+                <div class="text-line" id="text-${doc.id}">${linkify(
+                data.text
+              )}</div>
+              `;
+
+              // 自分のメッセージは枠線と編集/削除
+              if (data.uid === currentUserID) {
+                div.classList.add('self');
+                div.style.border = `2px solid ${colorSet.border}`;
+
+                const actions = document.createElement('div');
+                actions.classList.add('msg-actions');
+                actions.innerHTML = `
+                  <span onclick="editMsg('${doc.id}', \`${data.text}\`)">編集</span>
+                  <span onclick="deleteMsg('${doc.id}')">削除</span>
+                `;
+                div.appendChild(actions);
+              }
+
+              chatBox.appendChild(div);
+            });
+
+            chatBox.scrollTop = chatBox.scrollHeight;
+          });
       }
 
       function editMsg(id, oldText) {
