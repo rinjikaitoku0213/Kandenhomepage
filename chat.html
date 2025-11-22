@@ -8,16 +8,12 @@
       html,
       body {
         overflow-x: hidden;
-      }
-      body {
         margin: 0;
         font-family: 'Noto Sans JP', sans-serif;
         background: #f6f8f9;
         color: #333;
         font-size: 18px;
       }
-
-      /* トップバー */
       .top-bar {
         position: sticky;
         top: 0;
@@ -34,8 +30,6 @@
         object-fit: contain;
         cursor: pointer;
       }
-
-      /* ログインボックス */
       #login-box {
         max-width: 450px;
         margin: 50px auto;
@@ -64,8 +58,6 @@
         cursor: pointer;
         font-size: 1.05rem;
       }
-
-      /* チャットコンテナ */
       #chat-container {
         max-width: 900px;
         margin: 50px auto;
@@ -73,8 +65,6 @@
         flex-direction: column;
         gap: 15px;
       }
-
-      /* セクション見出し（マイページ・チャット） */
       .section-header {
         display: flex;
         justify-content: space-between;
@@ -93,16 +83,12 @@
         font-weight: bold;
         user-select: none;
       }
-
-      /* ログイン中のマイページ */
       .current-user {
         font-size: 1rem;
         font-weight: normal;
         color: #555;
         margin-bottom: 20px;
       }
-
-      /* チャットボックス */
       #chat-box {
         border: 1px solid #ccc;
         height: 350px;
@@ -119,13 +105,13 @@
         padding: 0 20px;
         overflow: hidden;
       }
-
-      /* 入力欄 */
       .chat-input {
         display: flex;
         gap: 12px;
         margin-top: 10px;
+        flex-wrap: wrap;
         transition: max-height 0.3s ease, padding 0.3s ease;
+        align-items: flex-start;
       }
       .chat-input.collapsed {
         max-height: 0;
@@ -133,7 +119,8 @@
         padding: 0;
       }
       #msg {
-        width: calc(100% - 130px);
+        flex: 1 1 auto;
+        min-width: 250px;
         height: 50px;
         padding: 12px;
         border-radius: 10px;
@@ -141,6 +128,11 @@
         font-size: 1.05rem;
         resize: none;
         font-family: 'Noto Sans JP', sans-serif;
+      }
+      #img-file {
+        padding: 6px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
       }
       #send {
         padding: 14px 24px;
@@ -152,8 +144,13 @@
         cursor: pointer;
         font-size: 1.1rem;
       }
-
-      /* メッセージ */
+      #preview-container img {
+        max-width: 180px;
+        max-height: 180px;
+        border-radius: 8px;
+        object-fit: contain;
+        margin-top: 6px;
+      }
       .chat-message {
         padding: 10px 14px;
         border-radius: 10px;
@@ -161,6 +158,11 @@
         border-left: 6px solid transparent;
         background: white;
         position: relative;
+      }
+      .chat-message img {
+        max-width: 100%;
+        margin-top: 8px;
+        border-radius: 6px;
       }
       .self {
         border: 2px solid;
@@ -182,8 +184,6 @@
         text-decoration: underline;
         word-break: break-all;
       }
-
-      /* 編集・削除 */
       .msg-actions {
         position: absolute;
         top: 6px;
@@ -197,7 +197,6 @@
         color: #555;
         text-decoration: underline;
       }
-
       .edit-box {
         margin-top: 8px;
       }
@@ -250,23 +249,26 @@
 
     <!-- チャット・マイページ -->
     <div id="chat-container">
-      <!-- マイページ -->
       <div class="section-header">
         <div id="my-page-title">マイページ</div>
         <div class="toggle-symbol" style="visibility: hidden">－</div>
       </div>
       <div class="current-user" id="current-user-name"></div>
 
-      <!-- 全社員チャット -->
       <div class="section-header" id="chat-header">
         <div>全社員チャット</div>
         <div class="toggle-symbol" id="chat-toggle">－</div>
       </div>
       <div id="chat-box"></div>
+
       <div class="chat-input" id="chat-input">
         <textarea id="msg" placeholder="メッセージを入力"></textarea>
+        <input type="file" id="img-file" accept="image/*" />
         <button id="send">送信</button>
       </div>
+
+      <!-- プレビューコンテナ -->
+      <div id="preview-container"></div>
     </div>
 
     <!-- Firebase -->
@@ -277,7 +279,7 @@
         apiKey: 'AIzaSyC9P2KDpJKq45VIQjXkXLsU_KjnYkwOajM',
         authDomain: 'kanden-chat.firebaseapp.com',
         projectId: 'kanden-chat',
-        storageBucket: 'kanden-chat.firebasestorage.app',
+        storageBucket: 'kanden-chat.appspot.com',
         messagingSenderId: '818574421069',
         appId: '1:818574421069:web:45bcc3bcc5168116130004',
         measurementId: 'G-YJMPQG7K5V',
@@ -332,7 +334,7 @@
         );
       }
 
-      // ログイン処理
+      // ログイン
       document.getElementById('login-btn').addEventListener('click', () => {
         const enteredID = document.getElementById('employee-id').value.trim();
         if (!users[enteredID]) {
@@ -345,12 +347,9 @@
         currentUserStatus = users[enteredID].status;
         document.getElementById('login-box').style.display = 'none';
         document.getElementById('chat-container').style.display = 'flex';
-
-        // 「〇〇のマイページ」に変更
         document.getElementById(
           'my-page-title'
         ).textContent = `${currentUserName}のマイページ`;
-
         document.getElementById(
           'current-user-name'
         ).textContent = `現在制作中です。要望などありましたらお寄せください。`;
@@ -373,26 +372,60 @@
 
       function initChat() {
         const msgInput = document.getElementById('msg');
-        document.getElementById('send').addEventListener('click', async () => {
+        const fileInput = document.getElementById('img-file');
+        const previewContainer = document.getElementById('preview-container');
+
+        // ファイル選択時にプレビュー表示
+        fileInput.addEventListener('change', () => {
+          previewContainer.innerHTML = '';
+          const file = fileInput.files[0];
+          if (!file) return;
+
+          const reader = new FileReader();
+          reader.onload = () => {
+            const img = document.createElement('img');
+            img.src = reader.result;
+            previewContainer.appendChild(img);
+          };
+          reader.readAsDataURL(file);
+        });
+
+        document.getElementById('send').addEventListener('click', () => {
           const text = msgInput.value.trim();
-          if (!text) return;
-          const lastMsgSnap = await db
-            .collection('chat')
-            .orderBy('number', 'desc')
-            .limit(1)
-            .get();
-          let newNumber = 1;
-          if (!lastMsgSnap.empty)
-            newNumber = (lastMsgSnap.docs[0].data().number || 0) + 1;
-          await db.collection('chat').add({
-            text,
-            uid: currentUserID,
-            name: currentUserName,
-            status: currentUserStatus,
-            number: newNumber,
-            time: firebase.firestore.FieldValue.serverTimestamp(),
-          });
-          msgInput.value = '';
+          const file = fileInput.files[0];
+
+          if (!text && !file) return;
+
+          const reader = new FileReader();
+          reader.onload = async () => {
+            const imageBase64 = reader.result || null;
+
+            const lastMsgSnap = await db
+              .collection('chat')
+              .orderBy('number', 'desc')
+              .limit(1)
+              .get();
+            let newNumber = 1;
+            if (!lastMsgSnap.empty)
+              newNumber = (lastMsgSnap.docs[0].data().number || 0) + 1;
+
+            await db.collection('chat').add({
+              text,
+              imageBase64,
+              uid: currentUserID,
+              name: currentUserName,
+              status: currentUserStatus,
+              number: newNumber,
+              time: firebase.firestore.FieldValue.serverTimestamp(),
+            });
+
+            msgInput.value = '';
+            fileInput.value = '';
+            previewContainer.innerHTML = '';
+          };
+
+          if (file) reader.readAsDataURL(file);
+          else reader.onload();
         });
 
         db.collection('chat')
@@ -409,45 +442,47 @@
               div.style.background = colorSet.bg;
               div.style.borderLeft = `6px solid ${colorSet.border}`;
               div.dataset.id = doc.id;
+
               const numberStr = data.number ? `${data.number}. ` : '';
               const timeStr = formatTime(data.time);
+
               div.innerHTML = `
-              <div class="meta-line">${numberStr}${
-                data.name
-              }（${timeStr}）</div>
-              <div class="text-line" id="text-${doc.id}">${linkify(
-                data.text
-              )}</div>
-            `;
+        <div class="meta-line">${numberStr}${data.name}（${timeStr}）</div>
+        <div class="text-line" id="text-${doc.id}">${linkify(data.text)}</div>
+        ${data.imageBase64 ? `<img src="${data.imageBase64}" />` : ''}
+      `;
+
               if (data.uid === currentUserID) {
                 div.classList.add('self');
                 div.style.border = `2px solid ${colorSet.border}`;
                 const actions = document.createElement('div');
                 actions.classList.add('msg-actions');
                 actions.innerHTML = `
-                <span onclick="editMsg('${doc.id}', \`${data.text}\`)">編集</span>
-                <span onclick="deleteMsg('${doc.id}')">削除</span>
-              `;
+          <span onclick="editMsg('${doc.id}', \`${data.text}\`)">編集</span>
+          <span onclick="deleteMsg('${doc.id}')">削除</span>
+        `;
                 div.appendChild(actions);
               }
+
               chatBox.appendChild(div);
             });
             chatBox.scrollTop = chatBox.scrollHeight;
           });
       }
 
+      // 編集・削除関数
       function editMsg(id, oldText) {
         const textEl = document.getElementById(`text-${id}`);
         if (!textEl) return;
         textEl.innerHTML = `
-          <div class="edit-box" style="display:flex; gap:8px; margin-top:8px; align-items:flex-start;">
-            <textarea id="edit-area-${id}" style="flex:1; height:70px;">${oldText}</textarea>
-            <div style="display:flex; gap:4px; flex-direction:column;">
-              <button style="background-color:#e04040;color:white;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;" onclick="saveEdit('${id}')">保存</button>
-              <button style="background-color:#e0e0e0;color:black;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;" onclick="cancelEdit('${id}',\`${oldText}\`)">キャンセル</button>
-            </div>
-          </div>
-        `;
+    <div class="edit-box" style="display:flex; gap:8px; margin-top:8px; align-items:flex-start;">
+      <textarea id="edit-area-${id}" style="flex:1; height:70px;">${oldText}</textarea>
+      <div style="display:flex; gap:4px; flex-direction:column;">
+        <button style="background-color:#e04040;color:white;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;" onclick="saveEdit('${id}')">保存</button>
+        <button style="background-color:#e0e0e0;color:black;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;" onclick="cancelEdit('${id}',\`${oldText}\`)">キャンセル</button>
+      </div>
+    </div>
+  `;
       }
       function saveEdit(id) {
         const el = document.getElementById(`edit-area-${id}`);
@@ -465,31 +500,12 @@
       function cancelEdit(id, text) {
         const textEl = document.getElementById(`text-${id}`);
         if (!textEl) return;
-        textEl.innerHTML = linkify(text);
+        textEl.textContent = text;
       }
       function deleteMsg(id) {
-        if (!confirm('このメッセージを削除しますか？')) return;
-        db.collection('chat').doc(id).delete();
+        if (confirm('本当に削除しますか？'))
+          db.collection('chat').doc(id).delete();
       }
-
-      // 折りたたみ
-      const chatHeader = document.getElementById('chat-header');
-      const chatBox = document.getElementById('chat-box');
-      const chatInput = document.getElementById('chat-input');
-      const chatToggle = document.getElementById('chat-toggle');
-      let collapsed = false;
-      chatHeader.addEventListener('click', () => {
-        collapsed = !collapsed;
-        if (collapsed) {
-          chatBox.classList.add('collapsed');
-          chatInput.classList.add('collapsed');
-          chatToggle.textContent = '＋';
-        } else {
-          chatBox.classList.remove('collapsed');
-          chatInput.classList.remove('collapsed');
-          chatToggle.textContent = '－';
-        }
-      });
     </script>
   </body>
 </html>
